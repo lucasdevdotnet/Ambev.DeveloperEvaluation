@@ -1,10 +1,11 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Sale.CreateSale;
 using Ambev.DeveloperEvaluation.Application.Sales.DeleteSale;
+using Ambev.DeveloperEvaluation.Application.Sales.GetSale;
 using Ambev.DeveloperEvaluation.WebApi.Common;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sale.DeleteSale;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.CreateSales;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.DeleteSales;
-using Ambev.DeveloperEvaluation.WebApi.Features.Users.DeleteUser;
+using Ambev.DeveloperEvaluation.WebApi.Features.Sales.GetSale;
 using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -30,6 +31,36 @@ public class SalesController : BaseController
     {
         _mediator = mediator;
         _mapper = mapper;
+    }
+
+    /// <summary>
+    /// Retrieves a sale by their ID
+    /// </summary>
+    /// <param name="id">The unique identifier of the sale</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The sale details if found</returns>
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(ApiResponseWithData<GetSaleResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetSale([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        var request = new GetSaleRequest { Id = id };
+        var validator = new GetSaleRequestValidator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors);
+
+        var command = _mapper.Map<GetSaleCommand>(request.Id);
+        var response = await _mediator.Send(command, cancellationToken);
+
+        return Ok(new ApiResponseWithData<GetSaleResponse>
+        {
+            Success = true,
+            Message = "Sale retrieved successfully",
+            Data = _mapper.Map<GetSaleResponse>(response)
+        });
     }
 
     /// <summary>
@@ -69,8 +100,12 @@ public class SalesController : BaseController
         {
             throw;
         }
+
+
         
     }
+
+
 
     /// <summary>
     /// Deletes a sale by their ID
@@ -82,7 +117,7 @@ public class SalesController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteUser([FromRoute] Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> DeleteSale([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var request = new DeleteSaleRequest { Id = id };
         var validator = new DeleteSaleRequestValidator();
@@ -97,7 +132,7 @@ public class SalesController : BaseController
         return Ok(new ApiResponse
         {
             Success = true,
-            Message = "User deleted successfully"
+            Message = "Sale deleted successfully"
         });
     }
 }
