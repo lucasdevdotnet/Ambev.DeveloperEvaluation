@@ -83,6 +83,10 @@ exemplo post json
 
 Unit tests for sales have also been created.
 
+"Business rule applied."
+![image](https://github.com/user-attachments/assets/b9e8b8a5-62a6-4532-a973-4192d9f97945)
+
+
 
  ![image](https://github.com/user-attachments/assets/0b3aff25-b28e-4d94-82f5-001cb1b8d4e2)
 
